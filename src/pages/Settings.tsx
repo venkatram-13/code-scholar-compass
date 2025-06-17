@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ const Settings = () => {
   const [inactivityThreshold, setInactivityThreshold] = useState('7');
 
   // Update local state when settings are loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (settings) {
       setSyncTime(settings.syncTime || '02:00');
       setSyncFrequency(settings.syncFrequency || 'daily');
@@ -47,10 +47,11 @@ const Settings = () => {
 
   const handleManualSync = async () => {
     try {
-      const response = await fetch('/functions/v1/sync-codeforces', {
+      const response = await fetch('https://jycnchyashsvnvbqrvgf.supabase.co/functions/v1/sync-codeforces', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5Y25jaHlhc2hzdm52YnFydmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNzgzOTIsImV4cCI6MjA2NTc1NDM5Mn0.tdeduz4cQM55qy65aAbEVZ5nOZ7tULYEbLn1yBlF87w`
         },
         body: JSON.stringify({})
       });

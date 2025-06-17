@@ -1,84 +1,75 @@
 
 import { Problem } from '@/types/student';
-import { useMemo } from 'react';
 
 interface SubmissionHeatmapProps {
   problems: Problem[];
 }
 
-export function SubmissionHeatmap({ problems }: SubmissionHeatmapProps) {
-  const heatmapData = useMemo(() => {
-    const today = new Date();
-    const days = [];
-    
-    // Generate last 90 days
-    for (let i = 89; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      
-      const dayProblems = problems.filter(p => 
-        p.solvedAt.toDateString() === date.toDateString()
-      ).length;
-      
-      days.push({
-        date: date.toDateString(),
-        count: dayProblems,
-        display: date.getDate(),
-        month: date.getMonth(),
-      });
+export const SubmissionHeatmap = ({ problems }: SubmissionHeatmapProps) => {
+  // Generate last 12 months of data
+  const months = [];
+  const now = new Date();
+  
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      date,
+      month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      count: 0
+    });
+  }
+
+  // Count problems solved per month
+  problems.forEach(problem => {
+    if (problem.verdict === 'OK') {
+      const problemMonth = new Date(problem.solvedAt.getFullYear(), problem.solvedAt.getMonth(), 1);
+      const monthData = months.find(m => 
+        m.date.getTime() === problemMonth.getTime()
+      );
+      if (monthData) {
+        monthData.count++;
+      }
     }
-    
-    return days;
-  }, [problems]);
+  });
+
+  const maxCount = Math.max(...months.map(m => m.count), 1);
 
   const getIntensity = (count: number) => {
-    if (count === 0) return 'bg-muted/30';
-    if (count <= 2) return 'bg-green-200 dark:bg-green-900/40';
-    if (count <= 4) return 'bg-green-400 dark:bg-green-800/60';
-    if (count <= 6) return 'bg-green-600 dark:bg-green-700/80';
-    return 'bg-green-800 dark:bg-green-600';
+    if (count === 0) return 'bg-muted';
+    const intensity = count / maxCount;
+    if (intensity <= 0.25) return 'bg-green-200 dark:bg-green-900';
+    if (intensity <= 0.5) return 'bg-green-300 dark:bg-green-800';
+    if (intensity <= 0.75) return 'bg-green-400 dark:bg-green-700';
+    return 'bg-green-500 dark:bg-green-600';
   };
-
-  // Group by weeks
-  const weeks = [];
-  for (let i = 0; i < heatmapData.length; i += 7) {
-    weeks.push(heatmapData.slice(i, i + 7));
-  }
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-13 gap-1 text-xs">
-        {weeks.map((week, weekIndex) => (
-          week.map((day, dayIndex) => (
-            <div
-              key={`${weekIndex}-${dayIndex}`}
-              className={`aspect-square rounded-sm ${getIntensity(day.count)} 
-                         hover:ring-2 hover:ring-primary/50 transition-all duration-200
-                         cursor-pointer relative group`}
-              title={`${day.date}: ${day.count} problems solved`}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[10px] font-medium opacity-60">
-                  {day.count > 0 ? day.count : ''}
-                </span>
-              </div>
+      <div className="grid grid-cols-6 sm:grid-cols-12 gap-2">
+        {months.map((month, index) => (
+          <div key={index} className="space-y-1">
+            <div 
+              className={`h-8 rounded ${getIntensity(month.count)} border border-border/20`}
+              title={`${month.month}: ${month.count} problems solved`}
+            />
+            <div className="text-xs text-center text-muted-foreground">
+              {month.month.split(' ')[0]}
             </div>
-          ))
+          </div>
         ))}
       </div>
       
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>Less</span>
         <div className="flex gap-1">
-          {[0, 1, 2, 3, 4].map(level => (
-            <div
-              key={level}
-              className={`w-3 h-3 rounded-sm ${getIntensity(level * 2)}`}
-            />
-          ))}
+          <div className="w-3 h-3 bg-muted rounded-sm" />
+          <div className="w-3 h-3 bg-green-200 dark:bg-green-900 rounded-sm" />
+          <div className="w-3 h-3 bg-green-300 dark:bg-green-800 rounded-sm" />
+          <div className="w-3 h-3 bg-green-400 dark:bg-green-700 rounded-sm" />
+          <div className="w-3 h-3 bg-green-500 dark:bg-green-600 rounded-sm" />
         </div>
         <span>More</span>
       </div>
     </div>
   );
-}
+};

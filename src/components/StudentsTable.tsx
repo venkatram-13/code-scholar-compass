@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, Plus, Edit, Trash2, Download, RefreshCw } from 'lucide-react';
 import { Student } from '@/types/student';
 import { StudentDialog } from './StudentDialog';
-import { useStudents, useDeleteStudent } from '@/hooks/useStudents';
+import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from '@/hooks/useStudents';
 import { toast } from '@/hooks/use-toast';
 
 interface StudentsTableProps {
@@ -24,6 +24,8 @@ interface StudentsTableProps {
 
 export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
   const { data: students = [], isLoading, refetch } = useStudents();
+  const createStudentMutation = useCreateStudent();
+  const updateStudentMutation = useUpdateStudent();
   const deleteStudentMutation = useDeleteStudent();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +58,20 @@ export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
     setIsDialogOpen(true);
   };
 
+  const handleSave = async (student: Student) => {
+    try {
+      if (editingStudent) {
+        await updateStudentMutation.mutateAsync(student);
+      } else {
+        await createStudentMutation.mutateAsync(student);
+      }
+      setIsDialogOpen(false);
+      setEditingStudent(null);
+    } catch (error) {
+      console.error('Error saving student:', error);
+    }
+  };
+
   const handleDownloadCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'Codeforces Handle', 'Current Rating', 'Max Rating', 'Last Updated', 'Status'];
     const csvContent = [
@@ -83,10 +99,11 @@ export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
 
   const handleSyncStudent = async (studentId: string) => {
     try {
-      const response = await fetch('/functions/v1/sync-codeforces', {
+      const response = await fetch('https://jycnchyashsvnvbqrvgf.supabase.co/functions/v1/sync-codeforces', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5Y25jaHlhc2hzdm52YnFydmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNzgzOTIsImV4cCI6MjA2NTc1NDM5Mn0.tdeduz4cQM55qy65aAbEVZ5nOZ7tULYEbLn1yBlF87w`
         },
         body: JSON.stringify({ student_id: studentId })
       });
@@ -96,7 +113,6 @@ export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
           title: "Sync initiated",
           description: "Student data sync has been started.",
         });
-        // Refresh the data after a short delay
         setTimeout(() => refetch(), 2000);
       } else {
         throw new Error('Failed to sync student data');
@@ -227,12 +243,10 @@ export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
       </Card>
 
       <StudentDialog
-        isOpen={isDialogOpen}
-        onClose={() => {
-          setIsDialogOpen(false);
-          setEditingStudent(null);
-        }}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
         student={editingStudent}
+        onSave={handleSave}
       />
     </div>
   );
