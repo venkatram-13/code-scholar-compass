@@ -9,7 +9,222 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          auto_email_enabled: boolean | null
+          created_at: string | null
+          id: string
+          inactivity_threshold_days: number | null
+          last_sync: string | null
+          sync_frequency: string | null
+          sync_time: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_email_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          inactivity_threshold_days?: number | null
+          last_sync?: string | null
+          sync_frequency?: string | null
+          sync_time?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_email_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          inactivity_threshold_days?: number | null
+          last_sync?: string | null
+          sync_frequency?: string | null
+          sync_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      contests: {
+        Row: {
+          contest_id: string
+          created_at: string | null
+          date: string
+          id: string
+          name: string
+          new_rating: number | null
+          problems_solved: number | null
+          rank: number | null
+          rating_change: number | null
+          student_id: string | null
+          total_problems: number | null
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string | null
+          date: string
+          id?: string
+          name: string
+          new_rating?: number | null
+          problems_solved?: number | null
+          rank?: number | null
+          rating_change?: number | null
+          student_id?: string | null
+          total_problems?: number | null
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          name?: string
+          new_rating?: number | null
+          problems_solved?: number | null
+          rank?: number | null
+          rating_change?: number | null
+          student_id?: string | null
+          total_problems?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contests_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problems: {
+        Row: {
+          contest_id: string | null
+          created_at: string | null
+          id: string
+          name: string
+          problem_id: string
+          rating: number | null
+          solved_at: string
+          student_id: string | null
+          verdict: string | null
+        }
+        Insert: {
+          contest_id?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          problem_id: string
+          rating?: number | null
+          solved_at: string
+          student_id?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          contest_id?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          problem_id?: string
+          rating?: number | null
+          solved_at?: string
+          student_id?: string | null
+          verdict?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problems_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          codeforces_handle: string
+          created_at: string | null
+          current_rating: number | null
+          email: string
+          email_enabled: boolean | null
+          id: string
+          is_active: boolean | null
+          last_updated: string | null
+          max_rating: number | null
+          name: string
+          phone: string | null
+          reminder_emails_sent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          codeforces_handle: string
+          created_at?: string | null
+          current_rating?: number | null
+          email: string
+          email_enabled?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          max_rating?: number | null
+          name: string
+          phone?: string | null
+          reminder_emails_sent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          codeforces_handle?: string
+          created_at?: string | null
+          current_rating?: number | null
+          email?: string
+          email_enabled?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          max_rating?: number | null
+          name?: string
+          phone?: string | null
+          reminder_emails_sent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          contests_synced: number | null
+          error_message: string | null
+          id: string
+          problems_synced: number | null
+          status: string
+          student_id: string | null
+          sync_type: string
+          synced_at: string | null
+        }
+        Insert: {
+          contests_synced?: number | null
+          error_message?: string | null
+          id?: string
+          problems_synced?: number | null
+          status: string
+          student_id?: string | null
+          sync_type: string
+          synced_at?: string | null
+        }
+        Update: {
+          contests_synced?: number | null
+          error_message?: string | null
+          id?: string
+          problems_synced?: number | null
+          status?: string
+          student_id?: string | null
+          sync_type?: string
+          synced_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_logs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

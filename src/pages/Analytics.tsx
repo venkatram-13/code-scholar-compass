@@ -3,15 +3,28 @@ import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, TrendingUp, Award, Clock } from 'lucide-react';
-import { mockStudents } from '@/data/mockData';
+import { useStudents } from '@/hooks/useStudents';
 
 const Analytics = () => {
-  const totalStudents = mockStudents.length;
-  const activeStudents = mockStudents.filter(s => s.isActive).length;
+  const { data: students = [], isLoading } = useStudents();
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <div className="text-center">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const totalStudents = students.length;
+  const activeStudents = students.filter(s => s.isActive).length;
   const inactiveStudents = totalStudents - activeStudents;
-  const averageRating = Math.round(
-    mockStudents.reduce((sum, s) => sum + s.currentRating, 0) / totalStudents
-  );
+  const averageRating = totalStudents > 0 ? Math.round(
+    students.reduce((sum, s) => sum + s.currentRating, 0) / totalStudents
+  ) : 0;
 
   return (
     <Layout>
@@ -83,7 +96,7 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockStudents
+                {students
                   .sort((a, b) => b.currentRating - a.currentRating)
                   .slice(0, 5)
                   .map((student, index) => (
@@ -110,7 +123,7 @@ const Analytics = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockStudents
+                {students
                   .sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
                   .slice(0, 5)
                   .map((student) => (

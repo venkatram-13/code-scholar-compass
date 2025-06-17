@@ -7,27 +7,81 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
 import { toast } from '@/hooks/use-toast';
 
 const Settings = () => {
+  const { data: settings, isLoading } = useSettings();
+  const updateSettingsMutation = useUpdateSettings();
+  
   const [syncTime, setSyncTime] = useState('02:00');
   const [syncFrequency, setSyncFrequency] = useState('daily');
   const [autoEmailEnabled, setAutoEmailEnabled] = useState(true);
   const [inactivityThreshold, setInactivityThreshold] = useState('7');
 
-  const handleSaveSettings = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your settings have been updated successfully.",
-    });
+  // Update local state when settings are loaded
+  React.useEffect(() => {
+    if (settings) {
+      setSyncTime(settings.syncTime || '02:00');
+      setSyncFrequency(settings.syncFrequency || 'daily');
+      setAutoEmailEnabled(settings.autoEmailEnabled);
+      setInactivityThreshold(settings.inactivityThresholdDays?.toString() || '7');
+    }
+  }, [settings]);
+
+  const handleSaveSettings = async () => {
+    if (!settings) return;
+    
+    try {
+      await updateSettingsMutation.mutateAsync({
+        id: settings.id,
+        syncTime,
+        syncFrequency,
+        autoEmailEnabled,
+        inactivityThresholdDays: parseInt(inactivityThreshold)
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
   };
 
-  const handleManualSync = () => {
-    toast({
-      title: "Sync initiated",
-      description: "Manual data sync has been started. This may take a few minutes.",
-    });
+  const handleManualSync = async () => {
+    try {
+      const response = await fetch('/functions/v1/sync-codeforces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Sync initiated",
+          description: "Manual data sync has been started. This may take a few minutes.",
+        });
+      } else {
+        throw new Error('Failed to start sync');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start manual sync. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <div className="text-center">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -75,7 +129,7 @@ const Settings = () => {
                   Run Manual Sync Now
                 </Button>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Last sync: Today at 02:00 AM
+                  Last sync: {settings?.lastSync ? new Date(settings.lastSync).toLocaleString() : 'Never'}
                 </p>
               </div>
             </CardContent>
@@ -138,33 +192,33 @@ const Settings = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Email Service</span>
+                    <span className="text-sm">Database</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Operational</p>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-sm">Database</span>
+                    <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm">Supabase</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">456 MB used of 2 GB</p>
+                  <p className="text-xs text-muted-foreground">Connected</p>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Backup Service</span>
+                    <span className="text-sm">Sync Service</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Last backup: 1 hour ago</p>
+                  <p className="text-xs text-muted-foreground">Ready</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <div className="flex justify-end">
-            <Button onClick={handleSaveSettings}>
-              Save Settings
+            <Button onClick={handleSaveSettings} disabled={updateSettingsMutation.isPending}>
+              {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
             </Button>
           </div>
         </div>

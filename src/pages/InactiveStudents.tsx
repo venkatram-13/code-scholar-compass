@@ -5,25 +5,44 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Mail, AlertCircle } from 'lucide-react';
-import { mockStudents } from '@/data/mockData';
+import { useStudents, useUpdateStudent } from '@/hooks/useStudents';
 import { toast } from '@/hooks/use-toast';
 
 const InactiveStudents = () => {
-  const inactiveStudents = mockStudents.filter(student => !student.isActive);
+  const { data: students = [], isLoading } = useStudents();
+  const updateStudentMutation = useUpdateStudent();
+
+  const inactiveStudents = students.filter(student => !student.isActive);
 
   const sendReminderEmail = (studentId: string) => {
+    // TODO: Implement email sending via Edge Function
     toast({
       title: "Reminder sent",
       description: "Reminder email has been sent to the student.",
     });
   };
 
-  const toggleEmailNotifications = (studentId: string) => {
-    toast({
-      title: "Settings updated",
-      description: "Email notification settings have been updated.",
-    });
+  const toggleEmailNotifications = async (student: any) => {
+    try {
+      await updateStudentMutation.mutateAsync({
+        ...student,
+        emailEnabled: !student.emailEnabled
+      });
+    } catch (error) {
+      console.error('Error toggling email notifications:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">Inactive Students</h1>
+          <div className="text-center">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -93,7 +112,7 @@ const InactiveStudents = () => {
                         <div className="flex items-center gap-2">
                           <Switch 
                             checked={student.emailEnabled}
-                            onCheckedChange={() => toggleEmailNotifications(student.id)}
+                            onCheckedChange={() => toggleEmailNotifications(student)}
                           />
                           <span className="text-sm text-muted-foreground">
                             Email notifications
