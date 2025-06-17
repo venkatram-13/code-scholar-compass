@@ -1,13 +1,24 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import { Student } from '@/types/student';
+import { Layout } from '@/components/Layout';
+import { StudentsTable } from '@/components/StudentsTable';
+import { StudentProfile } from '@/components/StudentProfile';
 
 const Index = () => {
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <Layout>
+      {selectedStudent ? (
+        <StudentProfile 
+          student={selectedStudent} 
+          onBack={() => setSelectedStudent(null)} 
+        />
+      ) : (
+        <StudentsTable onViewStudent={setSelectedStudent} />
+      )}
+    </Layout>
   );
 };
 
