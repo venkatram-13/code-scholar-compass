@@ -1,5 +1,5 @@
 
-import { Users, UserCheck, Settings, BarChart3 } from "lucide-react";
+import { Users, UserCheck, Settings, BarChart3, Code, Trophy, Target, Brain, Zap, Award } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -13,12 +13,45 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 
-const items = [
+const platformItems = [
   {
-    title: "Students",
+    title: "Dashboard",
     url: "/",
-    icon: Users,
+    icon: BarChart3,
   },
+  {
+    title: "Codeforces",
+    url: "/codeforces",
+    icon: Code,
+  },
+  {
+    title: "LeetCode",
+    url: "/leetcode",
+    icon: Trophy,
+  },
+  {
+    title: "CodeChef",
+    url: "/codechef",
+    icon: Target,
+  },
+  {
+    title: "InterviewBit",
+    url: "/interviewbit",
+    icon: Brain,
+  },
+  {
+    title: "GeeksforGeeks",
+    url: "/geeksforgeeks",
+    icon: Zap,
+  },
+  {
+    title: "HackerRank",
+    url: "/hackerrank",
+    icon: Award,
+  },
+];
+
+const managementItems = [
   {
     title: "Analytics",
     url: "/analytics",
@@ -51,10 +84,27 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Platforms</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {platformItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                    <Link to={item.url}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {managementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                     <Link to={item.url}>
