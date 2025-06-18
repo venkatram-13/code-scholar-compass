@@ -92,6 +92,84 @@ export type Database = {
           },
         ]
       }
+      platform_scores: {
+        Row: {
+          avg_rating: number | null
+          contests_participated: number | null
+          created_at: string
+          id: string
+          last_calculated: string | null
+          platform_id: string | null
+          problems_solved: number | null
+          score: number | null
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          avg_rating?: number | null
+          contests_participated?: number | null
+          created_at?: string
+          id?: string
+          last_calculated?: string | null
+          platform_id?: string | null
+          problems_solved?: number | null
+          score?: number | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avg_rating?: number | null
+          contests_participated?: number | null
+          created_at?: string
+          id?: string
+          last_calculated?: string | null
+          platform_id?: string | null
+          problems_solved?: number | null
+          score?: number | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_scores_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_scores_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platforms: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       problems: {
         Row: {
           contest_id: string | null
@@ -129,6 +207,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "problems_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_platforms: {
+        Row: {
+          contests_participated: number | null
+          created_at: string
+          current_rating: number | null
+          handle: string
+          id: string
+          last_synced: string | null
+          max_rating: number | null
+          platform_id: string | null
+          problems_solved: number | null
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          contests_participated?: number | null
+          created_at?: string
+          current_rating?: number | null
+          handle: string
+          id?: string
+          last_synced?: string | null
+          max_rating?: number | null
+          platform_id?: string | null
+          problems_solved?: number | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contests_participated?: number | null
+          created_at?: string
+          current_rating?: number | null
+          handle?: string
+          id?: string
+          last_synced?: string | null
+          max_rating?: number | null
+          platform_id?: string | null
+          problems_solved?: number | null
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_platforms_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_platforms_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"

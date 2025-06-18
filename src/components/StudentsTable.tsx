@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Table,
@@ -14,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, Plus, Edit, Trash2, Download, RefreshCw } from 'lucide-react';
 import { Student } from '@/types/student';
-import { StudentDialog } from './StudentDialog';
+import { StudentPlatformDialog } from './StudentPlatformDialog';
 import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from '@/hooks/useStudents';
 import { toast } from '@/hooks/use-toast';
 
@@ -242,7 +241,7 @@ export const StudentsTable = ({ onViewStudent }: StudentsTableProps) => {
         </CardContent>
       </Card>
 
-      <StudentDialog
+      <StudentPlatformDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         student={editingStudent}
