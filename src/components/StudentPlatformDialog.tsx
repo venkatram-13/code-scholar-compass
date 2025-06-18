@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { usePlatforms, useStudentPlatforms, useCreateStudentPlatform } from '@/hooks/usePlatforms';
+import { usePlatforms, useStudentPlatforms, useCreateStudentPlatform, useSyncPlatformData } from '@/hooks/usePlatforms';
+import { RefreshCw } from 'lucide-react';
 
 interface StudentPlatformDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ export function StudentPlatformDialog({ open, onOpenChange, student, onSave }: S
   const { data: platforms = [] } = usePlatforms();
   const { data: studentPlatforms = [] } = useStudentPlatforms(student?.id);
   const createStudentPlatformMutation = useCreateStudentPlatform();
+  const syncPlatformMutation = useSyncPlatformData();
 
   const [formData, setFormData] = useState<Partial<Student>>({
     name: '',
@@ -71,7 +73,7 @@ export function StudentPlatformDialog({ open, onOpenChange, student, onSave }: S
     e.preventDefault();
     
     const studentData: Student = {
-      id: student?.id || Date.now().toString(),
+      id: student?.id || crypto.randomUUID(),
       name: formData.name || '',
       email: formData.email || '',
       phone: formData.phone || '',
@@ -85,10 +87,10 @@ export function StudentPlatformDialog({ open, onOpenChange, student, onSave }: S
     };
 
     // Save student first
-    onSave(studentData);
+    await onSave(studentData);
 
     // If creating a new student, save platform handles
-    if (!student && studentData.id) {
+    if (!student) {
       for (const platform of platforms) {
         const handle = platformHandles[platform.name];
         if (handle && handle.trim()) {
@@ -106,6 +108,19 @@ export function StudentPlatformDialog({ open, onOpenChange, student, onSave }: S
             console.error(`Failed to save ${platform.name} handle:`, error);
           }
         }
+      }
+    }
+  };
+
+  const handleSync = async (platformName: string) => {
+    if (student?.id) {
+      try {
+        await syncPlatformMutation.mutateAsync({
+          student_id: student.id,
+          platform_name: platformName
+        });
+      } catch (error) {
+        console.error(`Failed to sync ${platformName}:`, error);
       }
     }
   };
@@ -198,16 +213,30 @@ export function StudentPlatformDialog({ open, onOpenChange, student, onSave }: S
               <CardTitle className="text-lg">Platform Handles</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {platforms.map((platform) => (
-                  <div key={platform.id} className="space-y-2">
-                    <Label htmlFor={platform.name}>{platform.name} Handle</Label>
-                    <Input
-                      id={platform.name}
-                      value={platformHandles[platform.name] || ''}
-                      onChange={(e) => updatePlatformHandle(platform.name, e.target.value)}
-                      placeholder={`Enter ${platform.name} username`}
-                    />
+                  <div key={platform.id} className="flex items-center gap-4">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor={platform.name}>{platform.name} Handle</Label>
+                      <Input
+                        id={platform.name}
+                        value={platformHandles[platform.name] || ''}
+                        onChange={(e) => updatePlatformHandle(platform.name, e.target.value)}
+                        placeholder={`Enter ${platform.name} username`}
+                      />
+                    </div>
+                    {student && platformHandles[platform.name] && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSync(platform.name)}
+                        disabled={syncPlatformMutation.isPending}
+                        className="mt-6"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>

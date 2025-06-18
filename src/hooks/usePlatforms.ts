@@ -155,3 +155,33 @@ export const useUpdateStudentPlatform = () => {
     },
   });
 };
+
+export const useSyncPlatformData = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ student_id, platform_name }: { student_id: string; platform_name?: string }) => {
+      const { data, error } = await supabase.functions.invoke('sync-platforms', {
+        body: { student_id, platform_name }
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['platform-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['student-platforms'] });
+      toast({
+        title: "Success",
+        description: "Platform data synced successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to sync platform data.",
+        variant: "destructive",
+      });
+    },
+  });
+};
